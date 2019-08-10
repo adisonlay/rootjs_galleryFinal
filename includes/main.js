@@ -23,26 +23,59 @@ function initiateApp(){
 	/*advanced: add jquery sortable call here to make the gallery able to be sorted
 		//on change, rebuild the images array into the new order
 	*/
-	makeGallery(pictures);
+	$('#gallery').sortable({
+		stop: function() {
+			var sortedOrder = $('#gallery').sortable('toArray', { attribute: 'style' });
+			var reorderedArray = [];
+			for (var sortIndex = 0; sortIndex < sortedOrder.length; sortIndex++) {
+				var movedImage = sortedOrder[sortIndex].slice(sortedOrder[sortIndex].indexOf('"') + 1, sortedOrder[sortIndex].lastIndexOf('"'));
+				reorderedArray.push(movedImage);
+			}
+			localStorage.pictureOrder = JSON.stringify(reorderedArray);
+		}
+	});
+
+	if (localStorage.pictureOrder) {
+		makeGallery(JSON.parse(localStorage.pictureOrder));
+	} else {
+		makeGallery(pictures);
+	}
+
 	addModalCloseHandler();
 }
+
 function makeGallery(imageArray){
 	//use loops and jquery dom creation to make the html structure inside the #gallery section
 
 	//create a loop to go through the images in the imageArray
 		//create the elements needed for each picture, store the elements in variable
 
-		//attach a click handler to the figure you create.  call the "displayImage" function.  
+		//attach a click handler to the figure you create.  call the "displayImage" function.
 
 		//append the element to the #gallery section
-	
+
 	// side note: make sure to remove the hard coded html in the index.html when you are done!
 
+	for (var imageIndex = 0; imageIndex < imageArray.length; imageIndex++) {
+		var figure = $('<figure>').addClass('imageGallery col-xs-12 col-sm-6 col-md-4');
+		figure.css('background-image', 'url(' + imageArray[imageIndex] + ')');
+		figure.click(displayImage);
+
+		var figcaptionText = imageArray[imageIndex].replace('images/', '');
+		var figcaption = $('<figcaption>').text(figcaptionText);
+		figure.append(figcaption);
+
+		$('#gallery').append(figure);
+	}
 }
 
 function addModalCloseHandler(){
 	//add a click handler to the img element in the image modal.  When the element is clicked, close the modal
-	//for more info, check here: https://www.w3schools.com/bootstrap/bootstrap_ref_js_modal.asp	
+	//for more info, check here: https://www.w3schools.com/bootstrap/bootstrap_ref_js_modal.asp
+
+	$('.modal-body > img').click( function() {
+		$('#galleryModal').modal('hide');
+	});
 }
 
 function displayImage(){
@@ -56,11 +89,13 @@ function displayImage(){
 	//change the modal-title text to the name you found above
 	//change the src of the image in the modal to the url of the image that was clicked on
 
-	//show the modal with JS.  Check for more info here: 
+	//show the modal with JS.  Check for more info here:
 	//https://www.w3schools.com/bootstrap/bootstrap_ref_js_modal.asp
+
+	var imageURLSource = $(this).css('background-image');
+	var imageURL = imageURLSource.slice(imageURLSource.indexOf('"')+1, imageURLSource.lastIndexOf('"'));
+	var imageFilename = imageURL.slice(imageURL.lastIndexOf('/')+1, imageURL.lastIndexOf('.'));
+	$('.modal-title').text(imageFilename);
+	$('.modal-body > img').attr('src', imageURL);
+	$("#galleryModal").modal();
 }
-
-
-
-
-
